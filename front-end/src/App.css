@@ -1,0 +1,7 @@
+.app {
+  height: 100%;
+}
+
+.ant-layout-sider {
+  background: linear-gradient(135deg, #001529 0%, #002a4d 100%);
+}

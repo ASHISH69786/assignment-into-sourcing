@@ -1,0 +1,28 @@
+.sidebar {
+  background: linear-gradient(135deg, #001529 0%, #002a4d 100%);
+  min-height: 100vh;
+}
+
+.sidebar .ant-menu {
+  background: transparent;
+}
+
+.sidebar .ant-menu-item {
+  color: rgba(255, 255, 255, 0.65) !important;
+  transition: all 0.3s ease;
+}
+
+.sidebar .ant-menu-item:hover {
+  color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.sidebar .ant-menu-item-selected {
+  color: #fff !important;
+  background-color: #1890ff !important;
+  border-radius: 4px;
+}
+
+.sidebar .ant-menu-submenu-title {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
