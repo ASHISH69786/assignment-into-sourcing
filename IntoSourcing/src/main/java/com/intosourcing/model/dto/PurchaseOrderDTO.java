@@ -12,11 +12,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PurchaseOrderDTO {
-    private Long id;
+    private String id;
     private String orderNumber;
-    private Long supplierId;
+    private String supplierId;
     private String supplierName;
-    private Long buyerId;
+    private String buyerId;
     private String buyerName;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")

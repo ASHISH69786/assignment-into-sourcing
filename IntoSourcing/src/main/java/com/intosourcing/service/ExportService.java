@@ -26,8 +26,9 @@ public class ExportService {
         CellStyle headerStyle = workbook.createCellStyle();
         headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
         headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        headerStyle.setFont(workbook.createFont());
-        headerStyle.getFont().setBold(true);
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
 
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);

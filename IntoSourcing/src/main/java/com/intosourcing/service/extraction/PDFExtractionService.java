@@ -1,11 +1,11 @@
 package com.intosourcing.service.extraction;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -15,20 +15,30 @@ import java.util.regex.Pattern;
 @Service
 public class PDFExtractionService {
 
-    public String extractTextFromPDF(File pdfFile) throws IOException {
-        try (PDDocument document = PDDocument.load(pdfFile)) {
+    /**
+     * Extract text from PDF bytes (no disk access required)
+     * Processes PDF entirely in memory for read-only environments
+     */
+    public String extractTextFromPDF(byte[] pdfBytes) throws IOException {
+        try {
+            PDDocument document = Loader.loadPDF(pdfBytes);
             PDFTextStripper textStripper = new PDFTextStripper();
-            return textStripper.getText(document);
+            String text = textStripper.getText(document);
+            document.close();
+            return text;
         } catch (IOException e) {
-            log.error("Error extracting text from PDF: {}", pdfFile.getName(), e);
+            log.error("Error extracting text from PDF bytes", e);
             throw e;
         }
     }
 
-    public Map<String, String> extractPurchaseOrderData(File pdfFile) {
+    /**
+     * Extract purchase order data from PDF bytes
+     */
+    public Map<String, String> extractPurchaseOrderData(byte[] pdfBytes) {
         Map<String, String> orderData = new HashMap<>();
         try {
-            String text = extractTextFromPDF(pdfFile);
+            String text = extractTextFromPDF(pdfBytes);
 
             // Extract key fields using regex patterns
             orderData.put("orderNumber", extractField(text, "(?i)(?:order|po)\\s*(?:number|no\\.?|#)?[:\\s]*([A-Z0-9\\-]{5,20})"));
@@ -46,9 +56,9 @@ public class PDFExtractionService {
             // Clean up the data
             orderData.replaceAll((k, v) -> v != null ? v.trim() : "");
 
-            log.info("Successfully extracted data from: {}", pdfFile.getName());
+            log.info("Successfully extracted purchase order data from PDF");
         } catch (IOException e) {
-            log.error("Failed to extract data from PDF: {}", pdfFile.getName(), e);
+            log.error("Failed to extract data from PDF", e);
             orderData.put("error", "Failed to extract: " + e.getMessage());
         }
 
@@ -110,16 +120,19 @@ public class PDFExtractionService {
         return null;
     }
 
-    public List<Map<String, String>> extractMultipleOrdersFromPDF(File pdfFile) throws IOException {
+    /**
+     * Extract multiple purchase orders from PDF bytes
+     */
+    public List<Map<String, String>> extractMultipleOrdersFromPDF(byte[] pdfBytes) throws IOException {
         List<Map<String, String>> orders = new ArrayList<>();
-        String text = extractTextFromPDF(pdfFile);
+        String text = extractTextFromPDF(pdfBytes);
 
         // Split text by common order separators or page breaks
         String[] sections = text.split("(?i)(?:------|====|page break|new order)");
 
         for (String section : sections) {
             if (section.trim().length() > 50) {
-                // Create a temporary file content to extract
+                // Extract orders from text section
                 Map<String, String> orderData = extractOrderFromText(section);
                 if (orderData.containsKey("orderNumber") && orderData.get("orderNumber") != null) {
                     orders.add(orderData);

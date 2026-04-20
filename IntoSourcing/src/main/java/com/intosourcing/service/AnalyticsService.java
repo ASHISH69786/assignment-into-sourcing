@@ -57,10 +57,10 @@ public class AnalyticsService {
         return metrics;
     }
 
-    public Map<String, Object> getSupplierAnalytics(Long supplierId) {
+    public Map<String, Object> getSupplierAnalytics(String supplierId) {
         Map<String, Object> analytics = new HashMap<>();
 
-        List<PurchaseOrder> supplierOrders = purchaseOrderRepository.findBySupplierId(supplierId);
+        List<PurchaseOrder> supplierOrders = purchaseOrderRepository.findBySupplier(supplierId);
 
         analytics.put("totalOrders", supplierOrders.size());
         analytics.put("totalValue", calculateTotalValue(supplierOrders));
@@ -94,6 +94,7 @@ public class AnalyticsService {
 
     private int calculateTotalQuantity(List<PurchaseOrder> orders) {
         return orders.stream()
+                .filter(po -> po.getOrderItems() != null)
                 .flatMap(po -> po.getOrderItems().stream())
                 .mapToInt(oi -> oi.getOrderQuantity() != null ? oi.getOrderQuantity() : 0)
                 .sum();

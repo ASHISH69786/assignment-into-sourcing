@@ -33,7 +33,7 @@ public class AnalyticsController {
     }
 
     @GetMapping("/supplier/{supplierId}")
-    public ResponseEntity<Map<String, Object>> getSupplierAnalytics(@PathVariable Long supplierId) {
+    public ResponseEntity<Map<String, Object>> getSupplierAnalytics(@PathVariable String supplierId) {
         try {
             Map<String, Object> analytics = analyticsService.getSupplierAnalytics(supplierId);
             return ResponseEntity.ok(analytics);

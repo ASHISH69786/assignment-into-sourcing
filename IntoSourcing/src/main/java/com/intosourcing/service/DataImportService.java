@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -38,11 +37,13 @@ public class DataImportService {
         this.productRepository = productRepository;
     }
 
+    /**
+     * Import PDF data from byte array (no disk write required)
+     * This method processes PDFs entirely in memory, making it suitable for
+     * read-only deployments (Docker, Kubernetes, Serverless, etc.)
+     */
     @Transactional
-    public DataImport importPDFFile(String filePath) {
-        File pdfFile = new File(filePath);
-        String fileName = pdfFile.getName();
-
+    public DataImport importPDFFile(String fileName, byte[] pdfBytes) {
         DataImport importRecord = new DataImport();
         importRecord.setSourceFile(fileName);
         importRecord.setStatus(DataImport.ImportStatus.IN_PROGRESS);
@@ -53,12 +54,12 @@ public class DataImportService {
         StringBuilder errorLog = new StringBuilder();
 
         try {
-            // Extract data from PDF
+            // Extract data from PDF bytes (processed in memory)
             log.info("Starting import from: {}", fileName);
-            List<Map<String, String>> extractedOrders = pdfExtractionService.extractMultipleOrdersFromPDF(pdfFile);
+            List<Map<String, String>> extractedOrders = pdfExtractionService.extractMultipleOrdersFromPDF(pdfBytes);
 
             if (extractedOrders.isEmpty()) {
-                Map<String, String> singleOrder = pdfExtractionService.extractPurchaseOrderData(pdfFile);
+                Map<String, String> singleOrder = pdfExtractionService.extractPurchaseOrderData(pdfBytes);
                 if (singleOrder.containsKey("orderNumber") && singleOrder.get("orderNumber") != null) {
                     extractedOrders.add(singleOrder);
                 }
@@ -120,7 +121,7 @@ public class DataImportService {
         return dataImportRepository.findAll();
     }
 
-    public DataImport getImportDetails(Long importId) {
+    public DataImport getImportDetails(String importId) {
         return dataImportRepository.findById(importId).orElse(null);
     }
 }

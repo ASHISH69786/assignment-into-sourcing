@@ -1,33 +1,29 @@
 package com.intosourcing.repository;
 
 import com.intosourcing.model.entity.PurchaseOrder;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Long> {
+public interface PurchaseOrderRepository extends MongoRepository<PurchaseOrder, String> {
     Optional<PurchaseOrder> findByOrderNumber(String orderNumber);
 
-    List<PurchaseOrder> findBySupplierId(Long supplierId);
+    List<PurchaseOrder> findBySupplier(String supplierId);
 
-    List<PurchaseOrder> findByBuyerId(Long buyerId);
+    List<PurchaseOrder> findByBuyer(String buyerId);
 
     List<PurchaseOrder> findByOrderDateBetween(LocalDate startDate, LocalDate endDate);
 
-    @Query("SELECT po FROM PurchaseOrder po WHERE po.supplier.id = :supplierId " +
-           "AND po.orderDate BETWEEN :startDate AND :endDate")
-    List<PurchaseOrder> findBySupplierAndDateRange(
-        @Param("supplierId") Long supplierId,
-        @Param("startDate") LocalDate startDate,
-        @Param("endDate") LocalDate endDate
-    );
+    @Query("{ 'supplier.$id': ?0, 'orderDate': { $gte: ?1, $lte: ?2 } }")
+    List<PurchaseOrder> findBySupplierAndDateRange(String supplierId, LocalDate startDate, LocalDate endDate);
 
-    @Query("SELECT po FROM PurchaseOrder po WHERE po.status = :status")
-    List<PurchaseOrder> findByStatus(@Param("status") PurchaseOrder.OrderStatus status);
+    @Query("{ 'status': ?0 }")
+    List<PurchaseOrder> findByStatus(PurchaseOrder.OrderStatus status);
+
+    List<PurchaseOrder> findByStatus(String status);
 }
 

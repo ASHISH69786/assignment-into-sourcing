@@ -44,7 +44,7 @@ public class PurchaseOrderController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PurchaseOrderDTO> getPurchaseOrderById(@PathVariable Long id) {
+    public ResponseEntity<PurchaseOrderDTO> getPurchaseOrderById(@PathVariable String id) {
         return purchaseOrderRepository.findById(id)
                 .map(po -> ResponseEntity.ok(convertToDTO(po)))
                 .orElse(ResponseEntity.notFound().build());
@@ -58,8 +58,8 @@ public class PurchaseOrderController {
     }
 
     @GetMapping("/supplier/{supplierId}")
-    public ResponseEntity<List<PurchaseOrderDTO>> getPurchaseOrdersBySupplier(@PathVariable Long supplierId) {
-        List<PurchaseOrder> orders = purchaseOrderRepository.findBySupplierId(supplierId);
+    public ResponseEntity<List<PurchaseOrderDTO>> getPurchaseOrdersBySupplier(@PathVariable String supplierId) {
+        List<PurchaseOrder> orders = purchaseOrderRepository.findBySupplier(supplierId);
         List<PurchaseOrderDTO> dtos = orders.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -67,8 +67,8 @@ public class PurchaseOrderController {
     }
 
     @GetMapping("/buyer/{buyerId}")
-    public ResponseEntity<List<PurchaseOrderDTO>> getPurchaseOrdersByBuyer(@PathVariable Long buyerId) {
-        List<PurchaseOrder> orders = purchaseOrderRepository.findByBuyerId(buyerId);
+    public ResponseEntity<List<PurchaseOrderDTO>> getPurchaseOrdersByBuyer(@PathVariable String buyerId) {
+        List<PurchaseOrder> orders = purchaseOrderRepository.findByBuyer(buyerId);
         List<PurchaseOrderDTO> dtos = orders.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -102,7 +102,7 @@ public class PurchaseOrderController {
 
     @PostMapping("/{id}/status")
     public ResponseEntity<PurchaseOrderDTO> updateOrderStatus(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestParam String status) {
         try {
             return purchaseOrderRepository.findById(id)
@@ -119,7 +119,7 @@ public class PurchaseOrderController {
 
     @PostMapping("/{id}/convert-currency")
     public ResponseEntity<Map<String, Object>> convertOrderCurrency(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestParam String targetCurrency) {
         return purchaseOrderRepository.findById(id)
                 .map(po -> {

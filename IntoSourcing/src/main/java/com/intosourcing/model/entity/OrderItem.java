@@ -1,72 +1,51 @@
 package com.intosourcing.model.entity;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
 
-@Entity
-@Table(name = "order_items", indexes = {
-    @Index(name = "idx_order_items_po_id", columnList = "purchase_order_id"),
-    @Index(name = "idx_order_items_product_id", columnList = "product_id")
-})
+@Document(collection = "order_items")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderItem {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "purchase_order_id", nullable = false)
+    @DBRef
     private PurchaseOrder purchaseOrder;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "product_id", nullable = false)
+    @DBRef
     private Product product;
 
-    @Column(nullable = false)
     private Integer orderQuantity;
 
-    @Column(precision = 10, scale = 2)
     private BigDecimal unitPrice;
 
-    @Column(length = 10)
     private String currency = "USD";
 
-    @Column(precision = 12, scale = 2)
     private BigDecimal totalPrice;
 
-    @Column
     private Integer receivedQuantity = 0;
 
-    @Column(length = 50)
     private String size;
 
-    @Column(length = 50)
     private String color;
 
-    @Column(length = 500)
     private String notes;
+    private boolean active;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @CreatedDate
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @LastModifiedDate
     private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 }
 

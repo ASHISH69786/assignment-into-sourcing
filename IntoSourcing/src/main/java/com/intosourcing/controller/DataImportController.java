@@ -8,10 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +20,6 @@ import java.util.Map;
 public class DataImportController {
 
     private final DataImportService dataImportService;
-    private static final String UPLOAD_DIR = "uploads/";
 
     public DataImportController(DataImportService dataImportService) {
         this.dataImportService = dataImportService;
@@ -34,16 +30,12 @@ public class DataImportController {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            // Create upload directory if not exists
-            Files.createDirectories(Paths.get(UPLOAD_DIR));
+            // Process PDF from memory (no disk write required)
+            String originalFilename = file.getOriginalFilename();
+            byte[] fileBytes = file.getBytes();
 
-            // Save uploaded file
-            String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            Path filePath = Paths.get(UPLOAD_DIR, filename);
-            Files.write(filePath, file.getBytes());
-
-            // Import data
-            DataImport importResult = dataImportService.importPDFFile(filePath.toString());
+            // Import data directly from bytes
+            DataImport importResult = dataImportService.importPDFFile(originalFilename, fileBytes);
 
             response.put("success", true);
             response.put("message", "PDF imported successfully");
@@ -57,7 +49,7 @@ public class DataImportController {
                 response.put("errors", importResult.getErrorLog());
             }
 
-            log.info("PDF import completed: {}", filename);
+            log.info("PDF import completed: {}", originalFilename);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
@@ -74,19 +66,15 @@ public class DataImportController {
         Map<String, Object> results = new HashMap<>();
 
         try {
-            // Create upload directory if not exists
-            Files.createDirectories(Paths.get(UPLOAD_DIR));
-
             int totalProcessed = 0;
             int totalSuccessful = 0;
 
             for (MultipartFile file : files) {
                 try {
-                    String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                    Path filePath = Paths.get(UPLOAD_DIR, filename);
-                    Files.write(filePath, file.getBytes());
+                    String originalFilename = file.getOriginalFilename();
+                    byte[] fileBytes = file.getBytes();
 
-                    DataImport importResult = dataImportService.importPDFFile(filePath.toString());
+                    DataImport importResult = dataImportService.importPDFFile(originalFilename, fileBytes);
 
                     Map<String, Object> fileResult = new HashMap<>();
                     fileResult.put("importId", importResult.getId());
@@ -131,7 +119,7 @@ public class DataImportController {
     }
 
     @GetMapping("/{importId}")
-    public ResponseEntity<DataImport> getImportDetails(@PathVariable Long importId) {
+    public ResponseEntity<DataImport> getImportDetails(@PathVariable String importId) {
         DataImport importRecord = dataImportService.getImportDetails(importId);
         if (importRecord != null) {
             return ResponseEntity.ok(importRecord);
