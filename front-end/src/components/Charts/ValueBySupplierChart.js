@@ -12,11 +12,13 @@ import {
 import { Card } from 'antd';
 
 const ValueBySupplierChart = ({ data, loading = false }) => {
+  // Ensure data is an array before checking length
+  const validData = Array.isArray(data) ? data : [];
   return (
     <Card title="Total Order Value by Supplier" loading={loading} style={{ height: '100%' }}>
-      {!loading && data && data.length > 0 ? (
+      {!loading && validData && validData.length > 0 ? (
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data}>
+          <BarChart data={validData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
             <YAxis />

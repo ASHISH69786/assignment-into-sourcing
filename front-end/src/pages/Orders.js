@@ -44,8 +44,10 @@ const Orders = () => {
     setLoading(true);
     try {
       const data = await ApiService.getAllOrders();
-      setOrders(data);
-      setFilteredOrders(data);
+      // Ensure data is an array
+      const validOrders = Array.isArray(data) ? data : [];
+      setOrders(validOrders);
+      setFilteredOrders(validOrders);
     } catch (error) {
       console.error('Failed to fetch orders:', error);
       message.error('Failed to load orders');
@@ -56,10 +58,13 @@ const Orders = () => {
 
   const handleFilterChange = (filterValues) => {
     setFilters(filterValues);
-    let filtered = [...orders];
+    // Ensure orders is an array before filtering
+    const validOrders = Array.isArray(orders) ? orders : [];
+    let filtered = [...validOrders];
 
     if (filterValues.startDate && filterValues.endDate) {
       filtered = filtered.filter((order) => {
+        if (!order || !order.orderDate) return false;
         const orderDate = new Date(order.orderDate);
         const startDate = new Date(filterValues.startDate);
         const endDate = new Date(filterValues.endDate);
@@ -68,11 +73,11 @@ const Orders = () => {
     }
 
     if (filterValues.supplier) {
-      filtered = filtered.filter((order) => order.supplierName === filterValues.supplier);
+      filtered = filtered.filter((order) => order && order.supplierName === filterValues.supplier);
     }
 
     if (filterValues.status) {
-      filtered = filtered.filter((order) => order.status === filterValues.status);
+      filtered = filtered.filter((order) => order && order.status === filterValues.status);
     }
 
     setFilteredOrders(filtered);
@@ -80,11 +85,15 @@ const Orders = () => {
 
   const handleClearFilters = () => {
     setFilters({});
-    setFilteredOrders(orders);
+    // Ensure orders is an array
+    const validOrders = Array.isArray(orders) ? orders : [];
+    setFilteredOrders(validOrders);
   };
 
   const handleViewDetails = (orderId) => {
-    const order = orders.find((o) => o.id === orderId);
+    // Ensure orders is an array before finding
+    const validOrders = Array.isArray(orders) ? orders : [];
+    const order = validOrders.find((o) => o && o.id === orderId);
     setSelectedOrder(order);
     setDetailsModalVisible(true);
   };

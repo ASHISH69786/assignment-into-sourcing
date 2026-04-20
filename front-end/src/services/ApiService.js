@@ -11,33 +11,6 @@ const apiClient = axios.create({
   },
 });
 
-// Request interceptor
-apiClient.interceptors.request.use(
-  (config) => {
-    // Add auth token if available
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Response interceptor
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      // Handle unauthorized - redirect to login
-      localStorage.removeItem('authToken');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
 
 const ApiService = {
   // ============ Purchase Orders Endpoints ============
@@ -48,7 +21,9 @@ const ApiService = {
   getAllOrders: async (params = {}) => {
     try {
       const response = await apiClient.get('/purchase-orders', { params });
-      return response.data;
+      // Handle both array and object responses
+      const data = response.data;
+      return Array.isArray(data) ? data : (data.data || data.orders || []);
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch orders');
     }
@@ -60,7 +35,9 @@ const ApiService = {
   getOrderById: async (id) => {
     try {
       const response = await apiClient.get(`/purchase-orders/${id}`);
-      return response.data;
+      // Handle both single object and wrapped responses
+      const data = response.data;
+      return data || {};
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch order');
     }
@@ -72,7 +49,9 @@ const ApiService = {
   getOrderByNumber: async (orderNumber) => {
     try {
       const response = await apiClient.get(`/purchase-orders/number/${orderNumber}`);
-      return response.data;
+      // Handle both single object and wrapped responses
+      const data = response.data;
+      return data || {};
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch order');
     }
@@ -84,7 +63,9 @@ const ApiService = {
   getOrdersBySupplier: async (supplierId, params = {}) => {
     try {
       const response = await apiClient.get(`/purchase-orders/supplier/${supplierId}`, { params });
-      return response.data;
+      // Handle both array and object responses
+      const data = response.data;
+      return Array.isArray(data) ? data : (data.data || data.orders || []);
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch supplier orders');
     }
@@ -96,7 +77,9 @@ const ApiService = {
   getOrdersByBuyer: async (buyerId, params = {}) => {
     try {
       const response = await apiClient.get(`/purchase-orders/buyer/${buyerId}`, { params });
-      return response.data;
+      // Handle both array and object responses
+      const data = response.data;
+      return Array.isArray(data) ? data : (data.data || data.orders || []);
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch buyer orders');
     }
@@ -110,7 +93,9 @@ const ApiService = {
       const response = await apiClient.get('/purchase-orders/date-range', {
         params: { startDate, endDate, ...params },
       });
-      return response.data;
+      // Handle both array and object responses
+      const data = response.data;
+      return Array.isArray(data) ? data : (data.data || data.orders || []);
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch orders by date range');
     }
@@ -122,7 +107,9 @@ const ApiService = {
   getOrdersByStatus: async (status, params = {}) => {
     try {
       const response = await apiClient.get(`/purchase-orders/status/${status}`, { params });
-      return response.data;
+      // Handle both array and object responses
+      const data = response.data;
+      return Array.isArray(data) ? data : (data.data || data.orders || []);
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch orders by status');
     }
@@ -196,7 +183,9 @@ const ApiService = {
   getImportHistory: async (params = {}) => {
     try {
       const response = await apiClient.get('/import/history', { params });
-      return response.data;
+      // Handle both array and object responses
+      const data = response.data;
+      return Array.isArray(data) ? data : (data.data || data.imports || data.history || []);
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch import history');
     }
@@ -208,7 +197,9 @@ const ApiService = {
   getImportDetails: async (importId) => {
     try {
       const response = await apiClient.get(`/import/${importId}`);
-      return response.data;
+      // Handle both object and wrapped responses
+      const data = response.data;
+      return data || {};
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch import details');
     }
@@ -252,7 +243,9 @@ const ApiService = {
   getDashboardMetrics: async () => {
     try {
       const response = await apiClient.get('/analytics/dashboard');
-      return response.data;
+      // Return the metrics object or wrapped data
+      const data = response.data;
+      return (data && typeof data === 'object' && !Array.isArray(data)) ? data : (data.data || data.metrics || {});
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch dashboard metrics');
     }
@@ -264,7 +257,9 @@ const ApiService = {
   getSupplierAnalytics: async (supplierId) => {
     try {
       const response = await apiClient.get(`/analytics/supplier/${supplierId}`);
-      return response.data;
+      // Return the analytics object or wrapped data
+      const data = response.data;
+      return (data && typeof data === 'object' && !Array.isArray(data)) ? data : (data.data || data.analytics || {});
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch supplier analytics');
     }
@@ -278,7 +273,9 @@ const ApiService = {
       const response = await apiClient.get('/analytics/date-range', {
         params: { startDate, endDate },
       });
-      return response.data;
+      // Return the analytics object or wrapped data
+      const data = response.data;
+      return (data && typeof data === 'object' && !Array.isArray(data)) ? data : (data.data || data.analytics || {});
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch date range analytics');
     }

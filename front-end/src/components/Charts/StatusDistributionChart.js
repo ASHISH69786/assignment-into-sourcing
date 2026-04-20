@@ -18,14 +18,16 @@ const StatusDistributionChart = ({ data, loading = false }) => {
     CANCELLED: '#ff4d4f',
   };
 
-  const chartData = data.map((item) => ({
+  // Ensure data is an array before mapping
+  const validData = Array.isArray(data) ? data : [];
+  const chartData = validData.map((item) => ({
     ...item,
     fill: COLORS[item.name] || '#1890ff',
   }));
 
   return (
     <Card title="Order Status Distribution" loading={loading} style={{ height: '100%' }}>
-      {!loading && data && data.length > 0 ? (
+      {!loading && validData && validData.length > 0 ? (
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
             <Pie

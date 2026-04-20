@@ -17,7 +17,9 @@ const SupplierFilter = ({ onFilter, onClear }) => {
       // We'll need to implement this endpoint or fetch suppliers from orders
       // For now, we'll use getAllOrders and extract unique suppliers
       const orders = await ApiService.getAllOrders({ limit: 1000 });
-      const uniqueSuppliers = [...new Set(orders.map((order) => order.supplierName))];
+      // Ensure orders is an array before mapping
+      const validOrders = Array.isArray(orders) ? orders : [];
+      const uniqueSuppliers = [...new Set(validOrders.map((order) => order.supplierName))];
       const supplierOptions = uniqueSuppliers.map((supplier) => ({
         label: supplier,
         value: supplier,

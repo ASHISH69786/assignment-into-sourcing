@@ -12,7 +12,9 @@ const Navbar = () => {
 
   const handleLogout = () => {
     ApiService.logout();
-    navigate('/login');
+    // TODO: Implement proper login page, then redirect here
+    // navigate('/login');
+    window.location.href = '/'; // For now, just go home
   };
 
   const userMenuItems = [

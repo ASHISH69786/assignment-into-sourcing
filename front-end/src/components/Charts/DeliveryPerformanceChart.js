@@ -13,18 +13,20 @@ import { Card } from 'antd';
 
 const DeliveryPerformanceChart = ({ data, loading = false }) => {
   const COLORS = ['#52c41a', '#ff4d4f', '#bfbfbf'];
+  // Ensure data is an array before checking length
+  const validData = Array.isArray(data) ? data : [];
 
   return (
     <Card title="Delivery Performance" loading={loading} style={{ height: '100%' }}>
-      {!loading && data && data.length > 0 ? (
+      {!loading && validData && validData.length > 0 ? (
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data} layout="vertical">
+          <BarChart data={validData} layout="vertical">
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis type="number" />
             <YAxis dataKey="name" type="category" />
             <Tooltip />
             <Legend />
-            {data[0] && Object.keys(data[0]).map((key, index) => {
+            {validData && validData[0] && Object.keys(validData[0]).map((key, index) => {
               if (key !== 'name') {
                 return <Bar key={key} dataKey={key} fill={COLORS[index] || '#1890ff'} />;
               }

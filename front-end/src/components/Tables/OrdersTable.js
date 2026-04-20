@@ -24,10 +24,13 @@ const OrdersTable = ({ orders = [], loading = false, onViewDetails, onEdit, pagi
       title: 'Supplier',
       dataIndex: 'supplierName',
       key: 'supplierName',
-      filters: [...new Set(orders.map((order) => order.supplierName))].map((supplier) => ({
-        text: supplier,
-        value: supplier,
-      })),
+      filters: Array.isArray(orders) && orders.length > 0
+        ? [...new Set(orders
+            .filter(order => order && order.supplierName)
+            .map((order) => order.supplierName))]
+            .filter(name => name) // filter out undefined/null
+            .map((supplier) => ({ text: supplier, value: supplier }))
+        : [],
       onFilter: (value, record) => record.supplierName === value,
     },
     {
